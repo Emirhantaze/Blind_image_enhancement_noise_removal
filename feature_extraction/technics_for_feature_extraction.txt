@@ -1,0 +1,14 @@
+variance of the image
+
+laplacian variance of the image (detection of motion blur) https://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
+
+number of 0 values
+
+number of the 1 values
+
+heigth of the image
+
+width of the image
+
+the image will be dividen in to sub groups 3*3 than getted variance for each section then total variance of the variance outputs
+
