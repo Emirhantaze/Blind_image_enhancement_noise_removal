@@ -118,5 +118,5 @@ dmypy.json
 
 noise/*
 kvasir-dataset-v2/*
-./kvasir-dataset-v2.zip
-./kvasir-dataset.zip
+/kvasir-dataset-v2.zip
+/kvasir-dataset.zip
