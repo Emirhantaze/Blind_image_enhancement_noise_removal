@@ -35,7 +35,7 @@ X_train, X_test, y_train, y_test = model_selection.train_test_split(
     X, Y, train_size=0.6, test_size=0.4, random_state=101)
 
 clf = SGDClassifier(loss="hinge", penalty="l2", max_iter=500)
-clf = svm.SVC()
+# clf = svm.SVC()
 
 clf.fit(X_train, y_train)
 
