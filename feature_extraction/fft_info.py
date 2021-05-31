@@ -18,13 +18,16 @@ ffts0 = []
 ffts1 = []
 ffts2 = []
 
+var0 = []
+var1 = []
+var2 = []
+
 out = []
 i = 0
 j = 0
 for image_col in image_cols:
 
     for image in image_col:
-        # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         ffimage = fftshift(np.abs(rfft2(image[:, :, 0])))
         ffimage = ffimage*255/ffimage.max()
         count = int(np.ceil(ffimage.shape[0]/9))
@@ -37,6 +40,7 @@ for image_col in image_cols:
         elements = np.array(elements)
         elements = elements/elements.max()
         ffts0.append(elements)
+        var0.append(ffimage.var())
 
         ffimage = fftshift(np.abs(rfft2(image[:, :, 1])))
         ffimage = ffimage*255/ffimage.max()
@@ -50,6 +54,7 @@ for image_col in image_cols:
         elements = np.array(elements)
         elements = elements/elements.max()
         ffts1.append(elements)
+        var1.append(ffimage.var())
 
         ffimage = fftshift(np.abs(rfft2(image[:, :, 2])))
         ffimage = ffimage*255/ffimage.max()
@@ -63,11 +68,20 @@ for image_col in image_cols:
         elements = np.array(elements)
         elements = elements/elements.max()
         ffts2.append(elements)
+        var2.append(ffimage.var())
 
         out.append(i)
         print(j)
         j += 1
     i += 1
+var0 = np.array(var0)
+var2 = np.array(var2)
+var1 = np.array(var1)
+
+var0 = var0/var0.max()
+var1 = var1/var1.max()
+var2 = var2/var2.max()
+
 
 ffts1 = np.array(ffts1)
 ffts2 = np.array(ffts2)
@@ -101,6 +115,9 @@ data = {
     24: ffts2[:, 6],
     25: ffts2[:, 7],
     26: ffts2[:, 8],
+    27: var0,
+    28: var1,
+    29: var2,
     "Output": out
 }
 df = pd.DataFrame(data)
