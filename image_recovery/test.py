@@ -1,13 +1,14 @@
+from __future__ import print_function
 import cv2
 import numpy as np
 
-img = cv2.imread('image_recovery/s2.jpeg')
+img = cv2.imread('image_recovery/m2.jpeg')
 
 # # Salt&Pepper Recovery
-median = cv2.medianBlur(img, 3)
-compare = np.concatenate((img, median), axis=1) #side by side comparison
-cv2.imshow('img', compare)
-cv2.waitKey(0)
+# median = cv2.medianBlur(img, 3)
+# compare = np.concatenate((img, median), axis=1) #side by side comparison
+# cv2.imshow('img', compare)
+# cv2.waitKey(0)
 
 # # Gaussian Recovery
 # median = cv2.bilateralFilter(img,9,85,85)
@@ -23,34 +24,111 @@ cv2.waitKey(0)
 
 # Motion Blur Recovery Wiener Filter
 
-# import os
-# import numpy as np
-# from numpy.fft import fft2, ifft2
-# from scipy.signal import gaussian, convolve2d
-# import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.pyplot as plt
+import pylops
 
 
-# def wiener_filter(img, kernel, K):
-# 	kernel /= np.sum(kernel)
-# 	dummy = np.copy(img)
-# 	dummy = fft2(dummy)
-# 	kernel = fft2(kernel, s = img.shape)
-# 	kernel = np.conj(kernel) / (np.abs(kernel) ** 2 + K)
-# 	dummy = dummy * kernel
-# 	dummy = np.abs(ifft2(dummy))
-# 	return dummy
+im = img
 
-# def gaussian_kernel(kernel_size = 3):
-# 	h = gaussian(kernel_size, kernel_size / 3).reshape(kernel_size, 1)
-# 	h = np.dot(h, h.transpose())
-# 	h /= np.sum(h)
-# 	return h
-# img = cv2.imread('image_recovery/m2.jpeg',cv2.IMREAD_GRAYSCALE)
-# noisy_img = cv2.imread('image_recovery/m2.jpeg',cv2.IMREAD_GRAYSCALE)
-# kernel = gaussian_kernel(3)
-# median = wiener_filter(noisy_img, kernel, K = 10)
-# compare = np.concatenate((img, median), axis=1)
-# cv2.imshow('img', compare)
-# cv2.waitKey(0)
+Nz = im.shape[0]
+Nx = im.shape[1]
 
+# Blurring guassian operator
+nh = [15, 25]
+hz = np.exp(-0.1*np.linspace(-(nh[0]//2), nh[0]//2, nh[0])**2)
+hx = np.exp(-0.03*np.linspace(-(nh[1]//2), nh[1]//2, nh[1])**2)
+hz /= np.trapz(hz) # normalize the integral to 1
+hx /= np.trapz(hx) # normalize the integral to 1
+h = hz[:, np.newaxis] * hx[np.newaxis, :]
 
+Cop = pylops.signalprocessing.Convolve2D(Nz * Nx, h=h,
+                                         offset=(nh[0] // 2,
+                                                 nh[1] // 2),
+                                         dims=(Nz, Nx), dtype='float32')
+imblur = img
+
+imdeblur = \
+    pylops.optimization.leastsquares.NormalEquationsInversion(Cop, None,
+                                                              imblur,
+                                                              maxiter=50)
+
+Wop = pylops.signalprocessing.DWT2D((Nz, Nx), wavelet='haar', level=3)
+Dop = [pylops.FirstDerivative(Nz * Nx, dims=(Nz, Nx), dir=0, edge=False),
+       pylops.FirstDerivative(Nz * Nx, dims=(Nz, Nx), dir=1, edge=False)]
+DWop = Dop + [Wop, ]
+
+imdeblurfista = \
+    pylops.optimization.sparsity.FISTA(Cop * Wop.H, imblur, eps=1e-1,
+                                       niter=100)[0]
+imdeblurfista = Wop.H * imdeblurfista
+
+imdeblurtv = \
+    pylops.optimization.sparsity.SplitBregman(Cop, Dop, imblur.flatten(),
+                                              niter_outer=10, niter_inner=5,
+                                              mu=1.5, epsRL1s=[2e0, 2e0],
+                                              tol=1e-4, tau=1., show=False,
+                                              ** dict(iter_lim=5, damp=1e-4))[0]
+
+imdeblurtv1 = \
+    pylops.optimization.sparsity.SplitBregman(Cop, DWop,
+                                              imblur.flatten(),
+                                              niter_outer=10, niter_inner=5,
+                                              mu=1.5, epsRL1s=[1e0, 1e0, 1e0],
+                                              tol=1e-4, tau=1., show=False,
+                                              ** dict(iter_lim=5, damp=1e-4))[0]
+
+# Reshape images
+imblur = imblur.reshape((Nz, Nx))
+imdeblur = imdeblur.reshape((Nz, Nx))
+imdeblurfista = imdeblurfista.reshape((Nz, Nx))
+imdeblurtv = imdeblurtv.reshape((Nz, Nx))
+imdeblurtv1 = imdeblurtv1.reshape((Nz, Nx))
+# sphinx_gallery_thumbnail_number = 2
+fig = plt.figure(figsize=(12, 6))
+fig.suptitle('Deblurring', fontsize=14, fontweight='bold', y=0.95)
+ax1 = plt.subplot2grid((2, 5), (0, 0))
+ax2 = plt.subplot2grid((2, 5), (0, 1))
+ax3 = plt.subplot2grid((2, 5), (0, 2))
+ax4 = plt.subplot2grid((2, 5), (1, 0))
+ax5 = plt.subplot2grid((2, 5), (1, 1))
+ax6 = plt.subplot2grid((2, 5), (1, 2))
+ax7 = plt.subplot2grid((2, 5), (0, 3), colspan=2)
+ax8 = plt.subplot2grid((2, 5), (1, 3), colspan=2)
+ax1.imshow(im, cmap='viridis', vmin=0, vmax=250)
+ax1.axis('tight')
+ax1.set_title('Original')
+ax2.imshow(imblur, cmap='viridis', vmin=0, vmax=250)
+ax2.axis('tight')
+ax2.set_title('Blurred')
+ax3.imshow(imdeblur, cmap='viridis', vmin=0, vmax=250)
+ax3.axis('tight')
+ax3.set_title('Deblurred')
+ax4.imshow(imdeblurfista, cmap='viridis', vmin=0, vmax=250)
+ax4.axis('tight')
+ax4.set_title('FISTA deblurred')
+ax5.imshow(imdeblurtv, cmap='viridis', vmin=0, vmax=250)
+ax5.axis('tight')
+ax5.set_title('TV deblurred')
+ax6.imshow(imdeblurtv1, cmap='viridis', vmin=0, vmax=250)
+ax6.axis('tight')
+ax6.set_title('TV+Haar deblurred')
+ax7.plot(im[Nz//2], 'k')
+ax7.plot(imblur[Nz//2], '--r')
+ax7.plot(imdeblur[Nz//2], '--b')
+ax7.plot(imdeblurfista[Nz//2], '--g')
+ax7.plot(imdeblurtv[Nz//2], '--m')
+ax7.plot(imdeblurtv1[Nz//2], '--y')
+ax7.axis('tight')
+ax7.set_title('Horizontal section')
+ax8.plot(im[:, Nx//2], 'k', label='Original')
+ax8.plot(imblur[:, Nx//2], '--r', label='Blurred')
+ax8.plot(imdeblur[:, Nx//2], '--b', label='Deblurred')
+ax8.plot(imdeblurfista[:, Nx//2], '--g', label='FISTA deblurred')
+ax8.plot(imdeblurtv[:, Nx//2], '--m', label='TV deblurred')
+ax8.plot(imdeblurtv1[:, Nx//2], '--y', label='TV+Haar deblurred')
+ax8.axis('tight')
+ax8.set_title('Vertical section')
+ax8.legend(loc=5, fontsize='small')
+plt.tight_layout()
+plt.subplots_adjust(top=0.8)
