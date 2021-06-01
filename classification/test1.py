@@ -70,9 +70,9 @@ clf = KNeighborsClassifier()
 clf = GaussianProcessClassifier()
 clf3 = GaussianNB()
 clf1 = tree.DecisionTreeClassifier()  # 2nd best working for now
-
 clf = RandomForestClassifier(
     criterion="gini",    n_estimators=100, random_state=101)  # best working for now
+
 
 clf2 = LogisticRegression(random_state=1)
 clf3 = MLPClassifier(hidden_layer_sizes=(
