@@ -1,9 +1,12 @@
+from skimage.restoration import richardson_lucy
 from scipy import fftpack
 import matplotlib.pyplot as plt
-import cv2 
+import cv2
 from numpy.random import uniform
 import numpy as np
-from numpy import floor,ceil
+from numpy import floor, ceil
+
+
 def pad_images_to_same_size(images):
     """
     :param images: sequence of images
@@ -25,11 +28,13 @@ def pad_images_to_same_size(images):
         diff_hori = width_max - w
         pad_left = diff_hori//2
         pad_right = diff_hori - pad_left
-        img_padded = cv2.copyMakeBorder(img, pad_top, pad_bottom, pad_left, pad_right, cv2.BORDER_CONSTANT, value=0)
+        img_padded = cv2.copyMakeBorder(
+            img, pad_top, pad_bottom, pad_left, pad_right, cv2.BORDER_CONSTANT, value=0)
         assert img_padded.shape[:2] == (height_max, width_max)
         images_padded.append(img_padded)
 
     return images_padded
+
 
 def createkernelformotion(lengthofkernel: int, angle: float) -> np.ndarray:
     if lengthofkernel % 2 == 1:
@@ -47,7 +52,6 @@ def createkernelformotion(lengthofkernel: int, angle: float) -> np.ndarray:
     supposedxvalues = []
     # önce sıfırdan büyük değerler için
     ylast = 0
-    xlast = 0
     for i in range(1, int(lengthofkernel/2)+1):
         y = np.tan(angle*np.pi/180)*i
         if y > lengthofkernel/2:
@@ -75,10 +79,12 @@ def createkernelformotion(lengthofkernel: int, angle: float) -> np.ndarray:
         kernel = np.flip(kernel, 0)
     return kernel
 
+
 def convolve(star, psf):
     star_fft = fftpack.fftshift(fftpack.fftn(star))
     psf_fft = fftpack.fftshift(fftpack.fftn(psf))
     return fftpack.fftshift(fftpack.ifftn(fftpack.ifftshift(star_fft*psf_fft)))
+
 
 def deconvolve(star, psf):
     star_fft = fftpack.fftshift(fftpack.fftn(star))
@@ -86,19 +92,18 @@ def deconvolve(star, psf):
     return fftpack.fftshift(fftpack.ifftn(fftpack.ifftshift(star_fft/psf_fft)))
 
 
-star = cv2.imread('image_recovery/o2.jpeg',cv2.IMREAD_GRAYSCALE)
+star = cv2.imread('image_recovery/o2.jpeg', cv2.IMREAD_GRAYSCALE)
 psf = createkernelformotion(300, uniform(0, 180))
 
-star,psf = pad_images_to_same_size([star,psf])
-psf=psf+(((psf==0))*1e-10)
+star, psf = pad_images_to_same_size([star, psf])
+psf = psf+(((psf == 0))*1e-10)
 star_conv = convolve(star, psf)
-from skimage.restoration import richardson_lucy
-star_deconv = richardson_lucy(star_conv,psf,50)
+star_deconv = richardson_lucy(star_conv, psf, 50)
 # star_deconv = deconvolve(star_conv, psf)
 
-f, axes = plt.subplots(2,2)
-axes[0,0].imshow(star)
-axes[0,1].imshow(psf)
-axes[1,0].imshow(np.real(star_conv))
-axes[1,1].imshow(np.real(star_deconv))
+f, axes = plt.subplots(2, 2)
+axes[0, 0].imshow(star)
+axes[0, 1].imshow(psf)
+axes[1, 0].imshow(np.real(star_conv))
+axes[1, 1].imshow(np.real(star_deconv))
 plt.show()

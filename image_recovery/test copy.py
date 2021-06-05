@@ -3,8 +3,8 @@ import numpy as np
 import skimage as sk
 from skimage.restoration import richardson_lucy
 from numpy.random import uniform
-from numpy import floor,ceil
-from scipy.signal import deconvolve 
+from numpy import floor, ceil
+from scipy.signal import deconvolve
 
 
 def createkernelformotion(lengthofkernel: int, angle: float) -> np.ndarray:
@@ -52,15 +52,16 @@ def createkernelformotion(lengthofkernel: int, angle: float) -> np.ndarray:
     return kernel
 
 
-img = cv2.imread('image_recovery/o2.jpeg',cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('image_recovery/o2.jpeg', cv2.IMREAD_GRAYSCALE)
 f = createkernelformotion(30, uniform(0, 180))
+np.savetxt("a.txt", f)
 img = cv2.filter2D(img, -1, f)
 
-cv2.imshow("a",img)
+cv2.imshow("a", img)
 # img = richardson_lucy(img, f, 20)
 print(img.shape)
-img , _ = deconvolve(img,f)
+img, _ = deconvolve(img, f)
 
-cv2.imshow("b",img)
+cv2.imshow("b", img)
 
 cv2.waitKey(0)
