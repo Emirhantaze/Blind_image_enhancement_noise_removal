@@ -14,8 +14,11 @@ from sklearn.ensemble import VotingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import plot_confusion_matrix
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import seaborn as sns
+
 
 # TODO add scaler and delete all the other scaling operators here
 # https://machinelearningmastery.com/how-to-save-and-load-models-and-data-preparation-in-scikit-learn-for-later-use/
