@@ -20,7 +20,7 @@ from sklearn.metrics import plot_confusion_matrix
 # TODO add scaler and delete all the other scaling operators here
 # https://machinelearningmastery.com/how-to-save-and-load-models-and-data-preparation-in-scikit-learn-for-later-use/
 
-df = pd.read_csv("Variance_info_for_each_channel.csv")
+df = pd.read_csv("Variance_info.csv")
 df2 = pd.read_csv("Laplacian_Variance_info.csv")
 df3 = pd.read_csv("One_Zero_info.csv")
 df4 = pd.read_csv("FFT_info.csv")

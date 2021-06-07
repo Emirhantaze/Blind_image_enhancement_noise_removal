@@ -15,8 +15,8 @@ for folder in folders:
 i = 0
 for image_col in image_cols:
     for image in image_col:
-        image, selectednoise = createnoise(image)
+        image, selectednoise, var_, amount_, pixel, angle = createnoise(image)
         imsave(os.path.join(
-            "./noise", str(selectednoise), f"{i}.jpg"), image, quality=100)
+            "./noise", str(selectednoise), f"{i}_{var_}_{amount_}_{pixel}_{angle}.jpg"), image, quality=100)
         i += 1
         print(i/80)

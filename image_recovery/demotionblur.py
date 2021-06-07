@@ -8,9 +8,10 @@ from cv2 import filter2D
 from scipy.signal import convolve2d
 
 
-img = imread("image_recovery\\m3.jpeg")
-psf = ckf(5, -31.3287)
-s = img.shape
+img = imread(
+    "2_0.001_0.001_15.467834093743738_24.88727279720132.jpg")
+psf = ckf(15.467834093743738, 24.88727279720132)
+# s = img.shape
 
 
 # img_blurred = convolve2d(img, psf, "auto")

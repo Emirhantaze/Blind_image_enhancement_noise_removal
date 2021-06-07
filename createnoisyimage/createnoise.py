@@ -6,7 +6,7 @@ from skimage.util import random_noise
 from numpy.random import randint, uniform
 
 
-def createnoise(img: (np.ndarray or Any)) -> Tuple[np.ndarray, int]:
+def createnoise(img: (np.ndarray or Any), type: int = -1) -> Tuple[np.ndarray, int]:
     """
     type of noise:
                     "gaussian",
@@ -15,7 +15,10 @@ def createnoise(img: (np.ndarray or Any)) -> Tuple[np.ndarray, int]:
                     "nothing"
 
     """
-    selectednoise = randint(0, 4)
+    if type == -1:
+        selectednoise = randint(0, 4)
+    else:
+        selectednoise = type
     img = np.asarray(img)
     if selectednoise == 0:
         var_ = uniform(0.001, 0.1)

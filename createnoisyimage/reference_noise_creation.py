@@ -10,13 +10,13 @@ from createnoise import createnoise
 import cv2
 from skimage.util import random_noise
 
-img = cv2.imread("1.jpg", cv2.IMREAD_COLOR)
-cv2.imshow("aa", img)
+img = cv2.imread("a.jpg", cv2.IMREAD_COLOR)
+# cv2.imshow("aa", img)
 print(img.shape)
 # a = random_noise(img, mode="s&p", amount=0.05)
 
 
-a, noisetype = createnoise(img)
+a = createnoise(img, type=3)
 
-cv2.imshow(f"{noisetype}", a)
+cv2.imshow(f"{a[1]}", a[0])
 cv2.waitKey(0)
