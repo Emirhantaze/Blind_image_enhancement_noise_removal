@@ -6,7 +6,7 @@ from skimage.util import random_noise
 from numpy.random import randint, uniform
 
 
-def createnoise(img: (np.ndarray or Any)) -> Tuple[np.ndarray, int]:
+def createnoise(img: (np.ndarray or Any), type: int = -1) -> Tuple[np.ndarray, int]:
     """
     type of noise:
                     "gaussian",
@@ -15,27 +15,46 @@ def createnoise(img: (np.ndarray or Any)) -> Tuple[np.ndarray, int]:
                     "nothing"
 
     """
-    selectednoise = randint(0, 4)
+    if type == -1:
+        selectednoise = randint(0, 4)
+    else:
+        selectednoise = type
     img = np.asarray(img)
     if selectednoise == 0:
-        img = random_noise(img, mode="s&p", amount=0.001)
-        img = filter2D(img, -1, createkernelformotion(3, uniform(0, 180)))
-        img = random_noise(img, var=uniform(0.001, 0.1))
+        var_ = uniform(0.001, 0.1)
+        pixel = 3
+        amount_ = 0.001
+        angle = uniform(0, 180)
+        img = random_noise(img, mode="s&p", amount=amount_)
+        img = filter2D(img, -1, createkernelformotion(pixel, angle))
+        img = random_noise(img, var=var_)
     elif selectednoise == 1:
-        img = random_noise(img, var=0.001)
-        img = filter2D(img, -1, createkernelformotion(3, uniform(0, 180)))
-        img = random_noise(img, mode="s&p", amount=uniform(0.1, 0.001))
+        pixel = 3
+        amount_ = uniform(0.1, 0.001)
+        angle = uniform(0, 180)
+        var_ = 0.001
+        img = random_noise(img, var=var_)
+        img = filter2D(img, -1, createkernelformotion(pixel, angle))
+        img = random_noise(img, mode="s&p", amount=amount_)
     elif selectednoise == 2:
-        img = random_noise(img, var=0.001)
+        var_ = 0.001
+        amount_ = 0.001
+        img = random_noise(img, var=var_)
         img = random_noise(img, mode="s&p", amount=0.001)
+        pixel = uniform(1, img.shape[0]//10)
+        angle = uniform(0, 180)
         img = filter2D(
-            img, -1, createkernelformotion(uniform(1, img.shape[0]//10), uniform(0, 180)))
+            img, -1, createkernelformotion(pixel, angle))
     elif selectednoise == 3:
+        pixel = 3
+        amount_ = 0.001
+        angle = uniform(0, 180)
+        var_ = 0.001
         img = random_noise(img, var=0.001)
         img = random_noise(img, mode="s&p", amount=0.001)
-        img = filter2D(img, -1, createkernelformotion(3, uniform(0, 180)))
+        img = filter2D(img, -1, createkernelformotion(pixel, angle))
 
-    return img, selectednoise
+    return img, selectednoise, var_, amount_, pixel, angle
 
 
 def createkernelformotion(lengthofkernel: int, angle: float) -> np.ndarray:

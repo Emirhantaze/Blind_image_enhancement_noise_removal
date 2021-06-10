@@ -100,6 +100,3 @@ def createkernelformotion(lengthofkernel: int, angle: float) -> np.ndarray:
     if flip:
         kernel = np.flip(kernel, 0)
     return kernel
-
-
-print(createkernelformotion(8, 70))

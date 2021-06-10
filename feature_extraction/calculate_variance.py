@@ -37,7 +37,7 @@ pattern = "_(.+)_(.+)_(.+)_(.+)...."
 for folder in folders:
     j = 0
     folder = os.path.join(start_folder, folder)
-    for file in os.listdir(folder):
+    for file in winsort(os.listdir(folder)):
         image = imread(os.path.join(folder, file))
         blue_var.append(np.var(image[:, :, 0]))
         green_var.append(np.var(image[:, :, 1]))
